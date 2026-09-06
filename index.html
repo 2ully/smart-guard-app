@@ -1,0 +1,1443 @@
+<title>جهاز الحماية الذكي — لوحة التحكم</title>
+
+<style>
+  /* ───────────────  TOKENS  ─────────────── */
+  :root {
+    /* dark is the default world: a control panel in a workshop */
+    --ground:      #0E1410;
+    --panel:       #161E18;
+    --panel-2:     #1D2720;
+    --line:        #2A3628;
+    --line-soft:   #223028;
+    --ink:         #E8E2D4;
+    --ink-dim:     #9DA79A;
+    --ink-faint:   #6B7568;
+    --brass:       #C9A227;
+    --brass-dim:   #8A7220;
+
+    --safe:        #3FA34D;
+    --safe-glow:   #3FA34D40;
+    --warn:        #E0A310;
+    --warn-glow:   #E0A31040;
+    --crit:        #D93A2B;
+    --crit-glow:   #D93A2B40;
+
+    --shadow:      0 2px 14px #00000055;
+
+    --f-display: "Noto Kufi Arabic", "Noto Sans Arabic", "Segoe UI", system-ui, sans-serif;
+    --f-body:    "Noto Sans Arabic", "Noto Naskh Arabic", system-ui, "Segoe UI", sans-serif;
+    --f-data:    "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --r:    10px;
+    --r-sm: 6px;
+    --pad:  16px;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --ground:    #E9E5D8;
+      --panel:     #F5F2E8;
+      --panel-2:   #EDE9DB;
+      --line:      #C7C0AB;
+      --line-soft: #D6D0BE;
+      --ink:       #1B241C;
+      --ink-dim:   #55604F;
+      --ink-faint: #7C866F;
+      --brass:     #8A6D0E;
+      --brass-dim: #A98F32;
+      --safe:      #2C7A38;
+      --safe-glow: #2C7A3830;
+      --warn:      #9E6E05;
+      --warn-glow: #9E6E0530;
+      --crit:      #B32718;
+      --crit-glow: #B3271830;
+      --shadow:    0 2px 12px #00000018;
+    }
+  }
+
+  :root[data-theme="light"] {
+    --ground:#E9E5D8; --panel:#F5F2E8; --panel-2:#EDE9DB; --line:#C7C0AB; --line-soft:#D6D0BE;
+    --ink:#1B241C; --ink-dim:#55604F; --ink-faint:#7C866F; --brass:#8A6D0E; --brass-dim:#A98F32;
+    --safe:#2C7A38; --safe-glow:#2C7A3830; --warn:#9E6E05; --warn-glow:#9E6E0530;
+    --crit:#B32718; --crit-glow:#B3271830; --shadow:0 2px 12px #00000018;
+  }
+  :root[data-theme="dark"] {
+    --ground:#0E1410; --panel:#161E18; --panel-2:#1D2720; --line:#2A3628; --line-soft:#223028;
+    --ink:#E8E2D4; --ink-dim:#9DA79A; --ink-faint:#6B7568; --brass:#C9A227; --brass-dim:#8A7220;
+    --safe:#3FA34D; --safe-glow:#3FA34D40; --warn:#E0A310; --warn-glow:#E0A31040;
+    --crit:#D93A2B; --crit-glow:#D93A2B40; --shadow:0 2px 14px #00000055;
+  }
+
+  /* ───────────────  BASE  ─────────────── */
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #app {
+    max-width: 520px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--ground);
+    padding-bottom: 78px; /* room for tab bar */
+    position: relative;
+    overflow: hidden;
+  }
+
+  @media (min-width: 900px) {
+    #app { max-width: 900px; }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 2px;
+    border-radius: var(--r-sm);
+  }
+
+  button { font: inherit; color: inherit; cursor: pointer; }
+
+  .num { font-family: var(--f-data); font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+
+  /* ───────────────  HEADER  ─────────────── */
+  .hdr {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px var(--pad);
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border-bottom: 1px solid var(--line);
+  }
+
+  .crest {
+    width: 40px; height: 40px; flex: none;
+    border-radius: 50%;
+    border: 1.5px solid var(--brass-dim);
+    background: radial-gradient(circle at 50% 38%, var(--panel-2), var(--ground));
+    display: grid; place-items: center;
+    color: var(--brass);
+  }
+  .crest svg { width: 22px; height: 22px; }
+
+  .hdr-txt { flex: 1; min-width: 0; }
+  .hdr-txt h1 {
+    margin: 0;
+    font-family: var(--f-display);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+  .hdr-txt p {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: var(--ink-faint);
+    line-height: 1.3;
+  }
+
+  .icon-btn {
+    flex: none;
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--f-data);
+    color: var(--ink-dim);
+    transition: color .15s, border-color .15s;
+  }
+  .icon-btn:hover { color: var(--brass); border-color: var(--brass-dim); }
+
+  /* ───────────────  STATUS STRIPE  ─────────────── */
+  .stripe {
+    padding: 18px var(--pad);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background:
+      linear-gradient(90deg, var(--st-glow), transparent 65%),
+      var(--panel);
+    border-right: 4px solid var(--st);
+    transition: background .4s, border-color .4s;
+  }
+  .stripe[data-state="safe"]  { --st: var(--safe); --st-glow: var(--safe-glow); }
+  .stripe[data-state="warn"]  { --st: var(--warn); --st-glow: var(--warn-glow); }
+  .stripe[data-state="crit"]  { --st: var(--crit); --st-glow: var(--crit-glow); }
+  .stripe[data-state="off"]   { --st: var(--ink-faint); --st-glow: transparent; }
+
+  .beacon {
+    width: 46px; height: 46px; flex: none;
+    border-radius: 50%;
+    background: var(--st);
+    display: grid; place-items: center;
+    color: var(--ground);
+    box-shadow: 0 0 0 6px var(--st-glow);
+  }
+  :root[data-theme="light"] .beacon, :root:not([data-theme]) .beacon { color: #F5F2E8; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme]) .beacon { color: var(--ground); } }
+  :root[data-theme="dark"] .beacon { color: var(--ground); }
+
+  .beacon svg { width: 24px; height: 24px; }
+  .stripe[data-state="crit"] .beacon { animation: throb .9s ease-in-out infinite; }
+  @keyframes throb {
+    0%,100% { box-shadow: 0 0 0 4px var(--st-glow); transform: scale(1); }
+    50%     { box-shadow: 0 0 0 14px transparent;   transform: scale(1.06); }
+  }
+
+  .stripe-txt { flex: 1; min-width: 0; }
+  .stripe-txt .lbl {
+    font-size: 10px;
+    letter-spacing: .14em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    font-family: var(--f-data);
+  }
+  .stripe-txt .val {
+    font-family: var(--f-display);
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--st);
+    line-height: 1.25;
+    margin-top: 2px;
+  }
+  .stripe-txt .sub {
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  /* ───────────────  VIEWS  ─────────────── */
+  .view { display: none; padding: var(--pad); flex-direction: column; gap: 14px; }
+  .view.on { display: flex; }
+
+  @media (min-width: 900px) {
+    .view.on { display: grid; grid-template-columns: 1fr 1fr; align-items: start; }
+    .view .full { grid-column: 1 / -1; }
+  }
+
+  .sec-lbl {
+    font-family: var(--f-data);
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sec-lbl::after {
+    content: ""; flex: 1; height: 1px; background: var(--line);
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: var(--shadow);
+  }
+
+  /* ───────────────  INSTRUMENT STRIP  ─────────────── */
+  .inst { padding: 13px 14px; display: flex; flex-direction: column; gap: 9px; }
+
+  .inst-top { display: flex; align-items: baseline; gap: 10px; }
+  .inst-name {
+    font-size: 13px; font-weight: 600; color: var(--ink-dim);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .inst-name svg { width: 15px; height: 15px; color: var(--ink-faint); }
+  .inst-read { margin-inline-start: auto; display: flex; align-items: baseline; gap: 3px; }
+  .inst-read .v {
+    font-family: var(--f-data);
+    font-variant-numeric: tabular-nums;
+    font-size: 25px; font-weight: 600; line-height: 1;
+    color: var(--iv, var(--ink));
+    transition: color .3s;
+  }
+  .inst-read .u { font-size: 11px; color: var(--ink-faint); font-family: var(--f-data); }
+
+  .track {
+    position: relative; height: 7px;
+    background: var(--panel-2);
+    border: 1px solid var(--line-soft);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .fill {
+    position: absolute; inset-block: 0; inset-inline-start: 0;
+    background: var(--iv, var(--safe));
+    border-radius: 4px;
+    transition: width .5s cubic-bezier(.3,.8,.4,1), background .3s;
+  }
+  .tick {
+    position: absolute; inset-block: -2px; width: 2px;
+    background: var(--crit);
+    opacity: .85;
+    transition: inset-inline-start .3s;
+  }
+
+  .inst-foot { display: flex; align-items: center; gap: 8px; }
+  .spark { display: block; width: 100%; height: 26px; flex: 1; }
+  .inst-lim {
+    font-family: var(--f-data); font-size: 10px; color: var(--ink-faint);
+    white-space: nowrap;
+  }
+
+  /* ───────────────  BUTTONS  ─────────────── */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 14px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    font-size: 13px; font-weight: 600;
+    transition: border-color .15s, background .15s, color .15s;
+    text-align: center;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--brass-dim); color: var(--brass); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn svg { width: 16px; height: 16px; flex: none; }
+
+  .btn.crit  { border-color: color-mix(in srgb, var(--crit) 45%, var(--line)); color: var(--crit); }
+  .btn.crit:hover:not(:disabled)  { background: var(--crit-glow); border-color: var(--crit); color: var(--crit); }
+  .btn.brass { border-color: var(--brass-dim); color: var(--brass); }
+  .btn.brass:hover:not(:disabled) { background: color-mix(in srgb, var(--brass) 12%, transparent); }
+
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; padding: 12px; }
+
+  /* ───────────────  ARM TOGGLE  ─────────────── */
+  .arm { padding: 14px; display: flex; align-items: center; gap: 13px; }
+  .arm-txt { flex: 1; }
+  .arm-txt .t { font-family: var(--f-display); font-size: 14px; font-weight: 700; }
+  .arm-txt .d { font-size: 11.5px; color: var(--ink-faint); margin-top: 2px; line-height: 1.4; }
+
+  .sw {
+    width: 54px; height: 30px; flex: none;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    padding: 3px;
+    display: flex;
+    transition: background .25s, border-color .25s;
+  }
+  .sw::after {
+    content: ""; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--ink-faint);
+    transition: transform .25s cubic-bezier(.4,1.3,.5,1), background .25s;
+  }
+  .sw[aria-checked="true"] { background: var(--safe-glow); border-color: var(--safe); }
+  .sw[aria-checked="true"]::after { background: var(--safe); transform: translateX(-24px); }
+  [dir="ltr"] .sw[aria-checked="true"]::after { transform: translateX(24px); }
+
+  /* ───────────────  LAMP ROW  ─────────────── */
+  .lamps { display: flex; gap: 9px; padding: 12px; }
+  .lamp {
+    flex: 1; padding: 11px 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    text-align: center;
+  }
+  .bulb {
+    width: 17px; height: 17px; border-radius: 50%;
+    background: var(--ink-faint);
+    opacity: .28;
+    transition: opacity .2s, box-shadow .2s;
+  }
+  .lamp[data-on="1"] .bulb { opacity: 1; box-shadow: 0 0 11px 1px var(--lc); background: var(--lc); }
+  .lamp .cap { font-size: 10.5px; color: var(--ink-faint); line-height: 1.3; }
+  .lamp[data-on="1"] .cap { color: var(--ink-dim); }
+  .lamp[data-on="1"][data-blink="1"] .bulb { animation: blink .55s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: .18; box-shadow: none; } }
+
+  /* ───────────────  LOG  ─────────────── */
+  .log { display: flex; flex-direction: column; max-height: 60vh; overflow-y: auto; }
+  .log-row {
+    display: flex; gap: 11px; align-items: flex-start;
+    padding: 11px 13px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .log-row:last-child { border-bottom: 0; }
+  .log-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lc); margin-top: 6px; flex: none; }
+  .log-body { flex: 1; min-width: 0; }
+  .log-msg { font-size: 12.5px; line-height: 1.45; }
+  .log-time { font-family: var(--f-data); font-size: 10px; color: var(--ink-faint); margin-top: 3px; }
+  .log-empty { padding: 26px 14px; text-align: center; color: var(--ink-faint); font-size: 12.5px; }
+
+  /* ───────────────  SETTINGS  ─────────────── */
+  .set-row { padding: 13px 14px; border-bottom: 1px solid var(--line-soft); }
+  .set-row:last-child { border-bottom: 0; }
+  .set-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 9px; }
+  .set-head .n { font-size: 13px; font-weight: 600; }
+  .set-head .v { margin-inline-start: auto; font-family: var(--f-data); font-size: 13px; color: var(--brass); }
+
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 4px; margin: 0;
+    background: var(--line); border-radius: 3px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 19px; height: 19px; border-radius: 50%;
+    background: var(--brass); border: 3px solid var(--panel);
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 15px; height: 15px; border-radius: 50%;
+    background: var(--brass); border: 3px solid var(--panel);
+    cursor: pointer; border-width: 3px;
+  }
+
+  .phone-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .phone-row .p {
+    font-family: var(--f-data); font-size: 13.5px; direction: ltr; flex: 1;
+    unicode-bidi: isolate;
+  }
+  [dir="rtl"] .phone-row .p { text-align: right; }
+  .phone-row .tag {
+    font-size: 10px; color: var(--ink-faint);
+    border: 1px solid var(--line); border-radius: 3px; padding: 2px 6px;
+  }
+  .x-btn {
+    background: none; border: 0; color: var(--ink-faint);
+    padding: 4px; line-height: 0; border-radius: 4px;
+  }
+  .x-btn:hover { color: var(--crit); }
+  .x-btn svg { width: 15px; height: 15px; }
+
+  .meta { padding: 13px 14px; display: grid; gap: 7px; }
+  .meta div { display: flex; gap: 10px; font-size: 12px; }
+  .meta dt { color: var(--ink-faint); min-width: 92px; }
+  .meta dd { margin: 0; color: var(--ink-dim); font-family: var(--f-data); font-size: 11.5px; }
+
+  .note {
+    padding: 11px 13px;
+    border: 1px dashed var(--brass-dim);
+    border-radius: var(--r-sm);
+    background: color-mix(in srgb, var(--brass) 7%, transparent);
+    font-size: 11.5px; color: var(--ink-dim); line-height: 1.55;
+  }
+
+  /* ───────────────  TAB BAR  ─────────────── */
+  .tabs {
+    position: fixed; inset-inline: 0; bottom: 0;
+    max-width: 520px; margin: 0 auto;
+    display: flex;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 30;
+  }
+  @media (min-width: 900px) { .tabs { max-width: 900px; } }
+
+  .tab {
+    flex: 1; background: none; border: 0;
+    padding: 10px 4px 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: var(--ink-faint);
+    border-top: 2px solid transparent;
+    margin-top: -1px;
+    transition: color .15s, border-color .15s;
+  }
+  .tab svg { width: 19px; height: 19px; }
+  .tab span { font-size: 10.5px; font-weight: 600; }
+  .tab[aria-selected="true"] { color: var(--brass); border-top-color: var(--brass); }
+  .tab .badge {
+    position: absolute; transform: translate(14px, -4px);
+    background: var(--crit); color: #fff;
+    font-family: var(--f-data); font-size: 9px;
+    min-width: 15px; height: 15px; border-radius: 8px;
+    display: grid; place-items: center; padding: 0 4px;
+  }
+
+  /* ───────────────  EMERGENCY OVERLAY  ─────────────── */
+  .alarm {
+    position: absolute; inset: 0;
+    z-index: 40;
+    background: var(--ground);
+    display: none;
+    flex-direction: column;
+    padding: 22px var(--pad) 26px;
+    overflow-y: auto;
+  }
+  .alarm.on { display: flex; animation: rise .3s ease-out; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+  .alarm::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 0%, var(--crit-glow), transparent 62%);
+    animation: wash 1.1s ease-in-out infinite alternate;
+  }
+  @keyframes wash { from { opacity: .45; } to { opacity: 1; } }
+
+  .alarm > * { position: relative; }
+
+  .alarm-tag {
+    align-self: flex-start;
+    font-family: var(--f-data); font-size: 9.5px; letter-spacing: .14em;
+    color: var(--brass); border: 1px solid var(--brass-dim);
+    padding: 3px 8px; border-radius: 3px;
+  }
+
+  .alarm-beacon {
+    width: 78px; height: 78px; margin: 26px auto 0;
+    border-radius: 50%;
+    background: var(--crit);
+    display: grid; place-items: center;
+    color: #fff;
+    animation: throb .85s ease-in-out infinite;
+  }
+  .alarm-beacon svg { width: 40px; height: 40px; }
+
+  .alarm h2 {
+    font-family: var(--f-display);
+    font-size: 25px; font-weight: 700;
+    text-align: center; margin: 17px 0 0;
+    color: var(--crit);
+    text-wrap: balance;
+  }
+  .alarm .why {
+    text-align: center; font-size: 14px; color: var(--ink);
+    margin-top: 7px; line-height: 1.5;
+  }
+  .alarm .when {
+    text-align: center; font-family: var(--f-data);
+    font-size: 11px; color: var(--ink-faint); margin-top: 5px;
+  }
+
+  .steps { margin-top: 22px; display: flex; flex-direction: column; gap: 8px; }
+  .step {
+    display: flex; align-items: center; gap: 11px;
+    padding: 12px 13px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    opacity: .3;
+    transition: opacity .35s, border-color .35s;
+  }
+  .step.done { opacity: 1; border-color: color-mix(in srgb, var(--safe) 40%, var(--line)); }
+  .step.live { opacity: 1; border-color: color-mix(in srgb, var(--crit) 55%, var(--line)); }
+  .step-ico { width: 19px; height: 19px; flex: none; color: var(--ink-faint); }
+  .step.done .step-ico { color: var(--safe); }
+  .step.live .step-ico { color: var(--crit); animation: pulse-ico .8s ease-in-out infinite; }
+  @keyframes pulse-ico { 50% { opacity: .35; } }
+  .step-txt { flex: 1; font-size: 12.5px; line-height: 1.45; }
+  .step-txt b { display: block; font-weight: 600; font-size: 13px; }
+  .step-txt span { color: var(--ink-faint); font-size: 11.5px; }
+
+  .sms {
+    margin-top: 11px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-inline-start: 3px solid var(--brass);
+    border-radius: var(--r-sm);
+    padding: 12px 13px;
+    font-size: 12.5px; line-height: 1.65;
+    animation: rise .3s ease-out;
+  }
+  .sms .from {
+    font-family: var(--f-data); font-size: 10px; color: var(--brass);
+    letter-spacing: .1em; margin-bottom: 6px;
+  }
+
+  .alarm-acts { margin-top: auto; padding-top: 22px; display: flex; flex-direction: column; gap: 9px; }
+  .alarm-acts .btn { padding: 15px; font-size: 14px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
+  }
+</style>
+
+<div id="app" dir="rtl" lang="ar">
+
+  <header class="hdr">
+    <div class="crest" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2 4 5.5v6c0 5 3.4 9.2 8 10.5 4.6-1.3 8-5.5 8-10.5v-6L12 2Z"/>
+        <path d="m9 12 2 2 4-4"/>
+      </svg>
+    </div>
+    <div class="hdr-txt">
+      <h1 data-t="appTitle">جهاز الحماية الذكي</h1>
+      <p data-t="appSub">ورشة صيانة السيارات العسكرية — المبنى أ</p>
+    </div>
+    <button class="icon-btn" id="langBtn" type="button" title="English">EN</button>
+  </header>
+
+  <section class="stripe" id="stripe" data-state="safe" aria-live="polite">
+    <div class="beacon" id="beacon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path id="beaconPath" d="m5 13 4 4L19 7"/>
+      </svg>
+    </div>
+    <div class="stripe-txt">
+      <div class="lbl" data-t="sysState">حالة النظام</div>
+      <div class="val" id="stateVal">الوضع طبيعي</div>
+      <div class="sub" id="stateSub">جميع القراءات ضمن الحدود الآمنة</div>
+    </div>
+  </section>
+
+  <!-- ══════════  MONITOR  ══════════ -->
+  <main class="view on" id="v-monitor">
+    <div class="full" style="display:flex;flex-direction:column;gap:11px">
+      <div class="sec-lbl" data-t="liveReadings">القراءات الحية</div>
+
+      <div class="card inst" id="inst-temp">
+        <div class="inst-top">
+          <div class="inst-name">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0Z"/>
+            </svg>
+            <span data-t="temp">درجة الحرارة</span>
+          </div>
+          <div class="inst-read"><span class="v" id="val-temp">28.5</span><span class="u">°C</span></div>
+        </div>
+        <div class="track"><div class="fill" id="fill-temp"></div><div class="tick" id="tick-temp"></div></div>
+        <div class="inst-foot">
+          <canvas class="spark" id="spark-temp"></canvas>
+          <span class="inst-lim" id="lim-temp">حد الإنذار 55°</span>
+        </div>
+      </div>
+
+      <div class="card inst" id="inst-hum">
+        <div class="inst-top">
+          <div class="inst-name">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2.7 6.4 9.5a7.2 7.2 0 1 0 11.2 0L12 2.7Z"/>
+            </svg>
+            <span data-t="hum">الرطوبة</span>
+          </div>
+          <div class="inst-read"><span class="v" id="val-hum">46</span><span class="u">%</span></div>
+        </div>
+        <div class="track"><div class="fill" id="fill-hum"></div><div class="tick" id="tick-hum"></div></div>
+        <div class="inst-foot">
+          <canvas class="spark" id="spark-hum"></canvas>
+          <span class="inst-lim" id="lim-hum">حد الإنذار 80%</span>
+        </div>
+      </div>
+
+      <div class="card inst" id="inst-gas">
+        <div class="inst-top">
+          <div class="inst-name">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 20a5 5 0 0 1-2-9.5C7 7 9.5 4.5 12 3c-.6 3 .5 4.6 2 6 2 1.8 3 3.6 3 6a5 5 0 0 1-2 4"/>
+              <path d="M11 20a2.6 2.6 0 0 1-.6-4c.9-1 1.6-2 1.3-3.5 1.6 1 2.8 2.6 2.8 4.4A2.9 2.9 0 0 1 13 20"/>
+            </svg>
+            <span data-t="gas">نسبة الغاز / الدخان</span>
+          </div>
+          <div class="inst-read"><span class="v" id="val-gas">120</span><span class="u">PPM</span></div>
+        </div>
+        <div class="track"><div class="fill" id="fill-gas"></div><div class="tick" id="tick-gas"></div></div>
+        <div class="inst-foot">
+          <canvas class="spark" id="spark-gas"></canvas>
+          <span class="inst-lim" id="lim-gas">حد الإنذار 400 PPM</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="full" style="display:flex;flex-direction:column;gap:11px">
+      <div class="sec-lbl" data-t="outputs">المخارج والمؤشرات</div>
+      <div class="card lamps">
+        <div class="lamp" id="lamp-green" data-on="1" style="--lc:var(--safe)">
+          <div class="bulb"></div><div class="cap" data-t="lampGreen">ضوء الأمان</div>
+        </div>
+        <div class="lamp" id="lamp-red" data-on="0" style="--lc:var(--crit)">
+          <div class="bulb"></div><div class="cap" data-t="lampRed">الإضاءة التحذيرية</div>
+        </div>
+        <div class="lamp" id="lamp-siren" data-on="0" style="--lc:var(--warn)">
+          <div class="bulb"></div><div class="cap" data-t="lampSiren">صفارة الإنذار</div>
+        </div>
+        <div class="lamp" id="lamp-gsm" data-on="1" style="--lc:var(--brass)">
+          <div class="bulb"></div><div class="cap" data-t="lampGsm">شبكة GSM</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ══════════  CONTROL  ══════════ -->
+  <main class="view" id="v-control">
+    <div class="full" style="display:flex;flex-direction:column;gap:11px">
+      <div class="sec-lbl" data-t="deviceCtl">التحكم بالجهاز</div>
+
+      <div class="card arm">
+        <div class="arm-txt">
+          <div class="t" data-t="armTitle">الجهاز مُفعَّل</div>
+          <div class="d" id="armDesc" data-t="armOnDesc">المستشعرات تراقب الورشة على مدار الساعة</div>
+        </div>
+        <button class="sw" id="armSw" role="switch" aria-checked="true" aria-labelledby="armLbl" type="button"></button>
+        <span id="armLbl" hidden data-t="armTitle">الجهاز مُفعَّل</span>
+      </div>
+
+      <div class="card btn-grid">
+        <button class="btn crit" id="btnSilence" type="button" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="m23 9-6 6"/><path d="m17 9 6 6"/>
+          </svg>
+          <span data-t="silence">إسكات الإنذار</span>
+        </button>
+        <button class="btn" id="btnTest" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v4"/><path d="M5.6 5.6 8.4 8.4"/><path d="M18.4 5.6 15.6 8.4"/>
+            <path d="M5 20h14"/><path d="M7 20a5 5 0 0 1 10 0"/>
+          </svg>
+          <span data-t="testAlarm">اختبار الإنذار</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="full" style="display:flex;flex-direction:column;gap:11px">
+      <div class="sec-lbl" data-t="demoSim">محاكاة العرض التوضيحي</div>
+      <div class="note" data-t="demoNote">
+        هذه الأزرار تُحاكي الحالات الطارئة لأغراض العرض فقط — لا تُشغِّل الجهاز الفعلي في الورشة.
+      </div>
+      <div class="card btn-grid">
+        <button class="btn crit" id="simFire" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 20a5 5 0 0 1-2-9.5C7 7 9.5 4.5 12 3c-.6 3 .5 4.6 2 6 2 1.8 3 3.6 3 6a5 5 0 0 1-2 4"/>
+          </svg>
+          <span data-t="simFire">محاكاة حريق</span>
+        </button>
+        <button class="btn crit" id="simGas" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v6"/><path d="M4.9 7.5 9 10"/><path d="M19.1 7.5 15 10"/>
+            <circle cx="12" cy="15" r="6"/>
+          </svg>
+          <span data-t="simGas">محاكاة تسرب غاز</span>
+        </button>
+        <button class="btn brass" id="simReset" type="button" style="grid-column:1/-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/>
+          </svg>
+          <span data-t="simReset">إعادة الوضع الطبيعي</span>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ══════════  LOG  ══════════ -->
+  <main class="view" id="v-log">
+    <div class="full" style="display:flex;flex-direction:column;gap:11px">
+      <div class="sec-lbl" data-t="eventLog">سجل الأحداث</div>
+      <div class="card log" id="logList"></div>
+      <button class="btn" id="btnClearLog" type="button">
+        <span data-t="clearLog">مسح السجل</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- ══════════  SETTINGS  ══════════ -->
+  <main class="view" id="v-settings">
+    <div style="display:flex;flex-direction:column;gap:11px">
+      <div class="sec-lbl" data-t="thresholds">حدود الإنذار</div>
+      <div class="card">
+        <div class="set-row">
+          <div class="set-head">
+            <span class="n" data-t="temp">درجة الحرارة</span>
+            <span class="v num" id="th-temp-v">55 °C</span>
+          </div>
+          <input type="range" id="th-temp" min="35" max="90" step="1" value="55" aria-label="حد الحرارة">
+        </div>
+        <div class="set-row">
+          <div class="set-head">
+            <span class="n" data-t="hum">الرطوبة</span>
+            <span class="v num" id="th-hum-v">80 %</span>
+          </div>
+          <input type="range" id="th-hum" min="50" max="95" step="1" value="80" aria-label="حد الرطوبة">
+        </div>
+        <div class="set-row">
+          <div class="set-head">
+            <span class="n" data-t="gas">نسبة الغاز</span>
+            <span class="v num" id="th-gas-v">400 PPM</span>
+          </div>
+          <input type="range" id="th-gas" min="150" max="900" step="10" value="400" aria-label="حد الغاز">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:11px">
+      <div class="sec-lbl" data-t="alertNums">أرقام التنبيه</div>
+      <div class="card" id="phoneList"></div>
+      <button class="btn" id="btnAddPhone" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14"/><path d="M5 12h14"/>
+        </svg>
+        <span data-t="addNum">إضافة رقم</span>
+      </button>
+
+      <div class="sec-lbl" style="margin-top:5px" data-t="devInfo">بيانات الجهاز</div>
+      <div class="card meta">
+        <div><dt data-t="mLoc">الموقع</dt><dd id="m-loc">Building A — Bay 2</dd></div>
+        <div><dt data-t="mCtl">وحدة التحكم</dt><dd>Arduino + GSM Module</dd></div>
+        <div><dt data-t="mFw">الإصدار</dt><dd>v2.0-demo</dd></div>
+        <div><dt data-t="mUp">مدة التشغيل</dt><dd id="m-up" class="num">00:00:00</dd></div>
+      </div>
+
+      <div class="note" data-t="demoBanner">
+        نموذج تجريبي للعرض — القراءات مُولَّدة برمجياً لتوضيح إمكانيات الترقية المستقبلية للنظام.
+      </div>
+    </div>
+  </main>
+
+  <!-- ══════════  EMERGENCY OVERLAY  ══════════ -->
+  <section class="alarm" id="alarm" role="alertdialog" aria-modal="true" aria-labelledby="alarmTitle">
+    <span class="alarm-tag" data-t="demoTag">DEMO / عرض توضيحي</span>
+
+    <div class="alarm-beacon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3 1.5 21h21L12 3Z"/><path d="M12 10v4.5"/><path d="M12 18h.01"/>
+      </svg>
+    </div>
+
+    <h2 id="alarmTitle" data-t="alarmTitle">حالة طارئة</h2>
+    <p class="why" id="alarmWhy">تم اكتشاف ارتفاع في درجة الحرارة</p>
+    <p class="when num" id="alarmWhen">—</p>
+
+    <div class="steps">
+      <div class="step" id="st-1">
+        <svg class="step-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3 1.5 21h21L12 3Z"/><path d="M12 10v4.5"/>
+        </svg>
+        <div class="step-txt"><b data-t="stp1">تشغيل الإنذار الصوتي والضوئي</b><span data-t="stp1s">الصفارة والإضاءة الحمراء في الورشة</span></div>
+      </div>
+      <div class="step" id="st-2">
+        <svg class="step-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>
+        </svg>
+        <div class="step-txt"><b id="stp2b">الاتصال بالمسؤول</b><span id="stp2s">+968 9XXX XXXX</span></div>
+      </div>
+      <div class="step" id="st-3">
+        <svg class="step-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2Z"/>
+        </svg>
+        <div class="step-txt"><b data-t="stp3">إرسال رسالة نصية</b><span data-t="stp3s">تفاصيل الحالة والقراءات</span></div>
+      </div>
+    </div>
+
+    <div class="sms" id="smsCard" hidden>
+      <div class="from" data-t="smsFrom">SMS — SMART GUARD</div>
+      <div id="smsBody"></div>
+    </div>
+
+    <div class="alarm-acts">
+      <button class="btn crit" id="btnAck" type="button">
+        <span data-t="ack">إسكات الإنذار وتأكيد الاستلام</span>
+      </button>
+      <button class="btn" id="btnDismiss" type="button">
+        <span data-t="dismiss">إغلاق ومتابعة المراقبة</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════  TAB BAR  ══════════ -->
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-view="monitor" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 13h4l2.5-7 4 14L16 13h5"/>
+      </svg>
+      <span data-t="tabMonitor">المراقبة</span>
+    </button>
+    <button class="tab" role="tab" aria-selected="false" data-view="control" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 20v-6"/><path d="M4 10V4"/><path d="M12 20v-9"/><path d="M12 7V4"/><path d="M20 20v-4"/><path d="M20 12V4"/>
+        <path d="M1.5 14h5"/><path d="M9.5 7h5"/><path d="M17.5 16h5"/>
+      </svg>
+      <span data-t="tabControl">التحكم</span>
+    </button>
+    <button class="tab" role="tab" aria-selected="false" data-view="log" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 3h11l4 4v14H5V3Z"/><path d="M9 9h6"/><path d="M9 13h6"/><path d="M9 17h4"/>
+      </svg>
+      <span data-t="tabLog">السجل</span>
+      <span class="badge" id="logBadge" hidden>0</span>
+    </button>
+    <button class="tab" role="tab" aria-selected="false" data-view="settings" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/>
+      </svg>
+      <span data-t="tabSettings">الإعدادات</span>
+    </button>
+  </nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ═══════════  COPY  ═══════════ */
+  const T = {
+    ar: {
+      appTitle:"جهاز الحماية الذكي", appSub:"ورشة صيانة السيارات العسكرية — المبنى أ",
+      sysState:"حالة النظام", liveReadings:"القراءات الحية", outputs:"المخارج والمؤشرات",
+      temp:"درجة الحرارة", hum:"الرطوبة", gas:"نسبة الغاز / الدخان",
+      lampGreen:"ضوء الأمان", lampRed:"الإضاءة التحذيرية", lampSiren:"صفارة الإنذار", lampGsm:"شبكة GSM",
+      deviceCtl:"التحكم بالجهاز", armTitle:"الجهاز مُفعَّل", armTitleOff:"الجهاز معطَّل",
+      armOnDesc:"المستشعرات تراقب الورشة على مدار الساعة",
+      armOffDesc:"المراقبة متوقفة — لن يصدر أي إنذار",
+      silence:"إسكات الإنذار", testAlarm:"اختبار الإنذار",
+      demoSim:"محاكاة العرض التوضيحي",
+      demoNote:"هذه الأزرار تُحاكي الحالات الطارئة لأغراض العرض فقط — لا تُشغِّل الجهاز الفعلي في الورشة.",
+      simFire:"محاكاة حريق", simGas:"محاكاة تسرب غاز", simReset:"إعادة الوضع الطبيعي",
+      eventLog:"سجل الأحداث", clearLog:"مسح السجل", logEmpty:"لا توجد أحداث مسجَّلة بعد",
+      thresholds:"حدود الإنذار", alertNums:"أرقام التنبيه", addNum:"إضافة رقم", devInfo:"بيانات الجهاز",
+      mLoc:"الموقع", mCtl:"وحدة التحكم", mFw:"الإصدار", mUp:"مدة التشغيل",
+      demoBanner:"نموذج تجريبي للعرض — القراءات مُولَّدة برمجياً لتوضيح إمكانيات الترقية المستقبلية للنظام.",
+      tabMonitor:"المراقبة", tabControl:"التحكم", tabLog:"السجل", tabSettings:"الإعدادات",
+      stNormal:"الوضع طبيعي", stNormalSub:"جميع القراءات ضمن الحدود الآمنة",
+      stWarn:"تحذير — اقتراب من الحد", stCrit:"حالة طارئة",
+      stOff:"الجهاز معطَّل", stOffSub:"لن يتم إصدار أي إنذار حتى إعادة التفعيل",
+      stMuted:"الإنذار مُسكَت", stMutedSub:"الحالة ما زالت قائمة — يرجى التحقق من الورشة",
+      alarmTitle:"حالة طارئة",
+      whyFire:"تم اكتشاف ارتفاع في درجة الحرارة", whyGas:"تم اكتشاف تسرب غاز / دخان",
+      whyHum:"تم اكتشاف ارتفاع في نسبة الرطوبة",
+      stp1:"تشغيل الإنذار الصوتي والضوئي", stp1s:"الصفارة والإضاءة الحمراء في الورشة",
+      calling:"جارٍ الاتصال بالمسؤول…", called:"تم الاتصال بالمسؤول",
+      stp3:"إرسال رسالة نصية", stp3s:"تفاصيل الحالة والقراءات",
+      smsFrom:"رسالة نصية — جهاز الحماية الذكي",
+      ack:"إسكات الإنذار وتأكيد الاستلام", dismiss:"إغلاق ومتابعة المراقبة",
+      demoTag:"DEMO / عرض توضيحي",
+      limTemp:n=>`حد الإنذار ${n}°`, limHum:n=>`حد الإنذار ${n}%`, limGas:n=>`حد الإنذار ${n} PPM`,
+      logArm:"تم تفعيل الجهاز", logDisarm:"تم تعطيل الجهاز",
+      logTest:"اختبار الإنذار — تشغيل يدوي", logTestEnd:"انتهى اختبار الإنذار",
+      logSilence:"تم إسكات الإنذار من التطبيق",
+      logAck:"تم تأكيد استلام التنبيه", logNormal:"عادت القراءات إلى الوضع الطبيعي",
+      logCall:p=>`تم الاتصال بالرقم ${p}`, logSms:p=>`تم إرسال رسالة نصية إلى ${p}`,
+      logThresh:(k,v)=>`تم تعديل حد ${k} إلى ${v}`,
+      logPhoneAdd:p=>`تمت إضافة رقم التنبيه ${p}`, logPhoneDel:p=>`تم حذف رقم التنبيه ${p}`,
+      logCritFire:"إنذار حريق — تجاوزت الحرارة الحد المحدد",
+      logCritGas:"إنذار غاز — تجاوزت النسبة الحد المحدد",
+      logCritHum:"إنذار رطوبة — تجاوزت النسبة الحد المحدد",
+      smsFire:(t,g)=>`تنبيه طارئ: تم اكتشاف ارتفاع في درجة الحرارة.\nالحرارة: ${t}°C — الغاز: ${g} PPM\nالموقع: ورشة صيانة السيارات العسكرية — المبنى أ\nالرجاء اتخاذ الإجراءات اللازمة فوراً.`,
+      smsGas:(t,g)=>`تنبيه طارئ: تم اكتشاف تسرب غاز أو دخان.\nالغاز: ${g} PPM — الحرارة: ${t}°C\nالموقع: ورشة صيانة السيارات العسكرية — المبنى أ\nالرجاء اتخاذ الإجراءات اللازمة فوراً.`,
+      smsHum:(t,g)=>`تنبيه: ارتفاع غير طبيعي في نسبة الرطوبة.\nالحرارة: ${t}°C — الغاز: ${g} PPM\nالموقع: ورشة صيانة السيارات العسكرية — المبنى أ`,
+      promptPhone:"أدخل رقم الهاتف", tagMain:"رئيسي", tagBackup:"احتياطي",
+      thTemp:"الحرارة", thHum:"الرطوبة", thGas:"الغاز"
+    },
+    en: {
+      appTitle:"Smart Protection Device", appSub:"Military Vehicle Workshop — Building A",
+      sysState:"System status", liveReadings:"Live readings", outputs:"Outputs & indicators",
+      temp:"Temperature", hum:"Humidity", gas:"Gas / smoke level",
+      lampGreen:"Safe light", lampRed:"Warning light", lampSiren:"Siren", lampGsm:"GSM network",
+      deviceCtl:"Device control", armTitle:"Device armed", armTitleOff:"Device disarmed",
+      armOnDesc:"Sensors are monitoring the workshop around the clock",
+      armOffDesc:"Monitoring paused — no alarm will be raised",
+      silence:"Silence alarm", testAlarm:"Test alarm",
+      demoSim:"Demo simulation",
+      demoNote:"These buttons simulate emergencies for the presentation only — they do not operate the real device in the workshop.",
+      simFire:"Simulate fire", simGas:"Simulate gas leak", simReset:"Return to normal",
+      eventLog:"Event log", clearLog:"Clear log", logEmpty:"No events recorded yet",
+      thresholds:"Alarm thresholds", alertNums:"Alert numbers", addNum:"Add number", devInfo:"Device info",
+      mLoc:"Location", mCtl:"Controller", mFw:"Firmware", mUp:"Uptime",
+      demoBanner:"Presentation prototype — readings are generated in software to demonstrate what the future upgrade can do.",
+      tabMonitor:"Monitor", tabControl:"Control", tabLog:"Log", tabSettings:"Settings",
+      stNormal:"All normal", stNormalSub:"Every reading is within safe limits",
+      stWarn:"Warning — nearing threshold", stCrit:"Emergency",
+      stOff:"Device disarmed", stOffSub:"No alarm will be raised until it is armed again",
+      stMuted:"Alarm silenced", stMutedSub:"The condition is still active — check the workshop",
+      alarmTitle:"Emergency",
+      whyFire:"High temperature detected", whyGas:"Gas or smoke leak detected",
+      whyHum:"Abnormally high humidity detected",
+      stp1:"Siren and warning light activated", stp1s:"Audible and visual alarm in the workshop",
+      calling:"Calling the supervisor…", called:"Supervisor called",
+      stp3:"Text message sent", stp3s:"Condition details and readings",
+      smsFrom:"SMS — SMART GUARD",
+      ack:"Silence alarm and acknowledge", dismiss:"Close and keep monitoring",
+      demoTag:"DEMO",
+      limTemp:n=>`Alarm at ${n}°`, limHum:n=>`Alarm at ${n}%`, limGas:n=>`Alarm at ${n} PPM`,
+      logArm:"Device armed", logDisarm:"Device disarmed",
+      logTest:"Alarm test — manually triggered", logTestEnd:"Alarm test finished",
+      logSilence:"Alarm silenced from the app",
+      logAck:"Alert acknowledged", logNormal:"Readings returned to normal",
+      logCall:p=>`Called ${p}`, logSms:p=>`Text message sent to ${p}`,
+      logThresh:(k,v)=>`${k} threshold changed to ${v}`,
+      logPhoneAdd:p=>`Alert number ${p} added`, logPhoneDel:p=>`Alert number ${p} removed`,
+      logCritFire:"Fire alarm — temperature above threshold",
+      logCritGas:"Gas alarm — level above threshold",
+      logCritHum:"Humidity alarm — level above threshold",
+      smsFire:(t,g)=>`EMERGENCY: High temperature detected.\nTemp: ${t}°C — Gas: ${g} PPM\nLocation: Military Vehicle Workshop — Building A\nTake immediate action.`,
+      smsGas:(t,g)=>`EMERGENCY: Gas or smoke leak detected.\nGas: ${g} PPM — Temp: ${t}°C\nLocation: Military Vehicle Workshop — Building A\nTake immediate action.`,
+      smsHum:(t,g)=>`ALERT: Abnormally high humidity.\nTemp: ${t}°C — Gas: ${g} PPM\nLocation: Military Vehicle Workshop — Building A`,
+      promptPhone:"Enter phone number", tagMain:"Primary", tagBackup:"Backup",
+      thTemp:"temperature", thHum:"humidity", thGas:"gas"
+    }
+  };
+
+  let lang = "ar";
+  const t = k => T[lang][k];
+
+  /* ═══════════  STATE  ═══════════ */
+  const S = {
+    temp: 28.5, hum: 46, gas: 120,
+    armed: true,
+    mode: "normal",          // normal | fire | gas
+    alarm: false,            // condition currently breached
+    muted: false,            // user silenced the siren
+    testing: false,
+    log: [],
+    unseen: 0,
+    started: Date.now(),
+    th: { temp: 55, hum: 80, gas: 400 },
+    phones: ["+968 9123 4567", "+968 9987 6543"],
+    hist: { temp: [], hum: [], gas: [] }
+  };
+
+  const RANGE = { temp: [0, 90], hum: [0, 100], gas: [0, 1000] };
+  const $ = id => document.getElementById(id);
+
+  /* ═══════════  HELPERS  ═══════════ */
+  const clock = () => {
+    const d = new Date();
+    const p = n => String(n).padStart(2, "0");
+    return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  };
+
+  function addLog(msg, kind) {
+    S.log.unshift({ msg, kind: kind || "info", time: clock() });
+    if (S.log.length > 60) S.log.pop();
+    if (currentView !== "log") { S.unseen++; }
+    renderLog();
+    renderBadge();
+  }
+
+  const lerp = (a, b, k) => a + (b - a) * k;
+
+  /* ═══════════  SPARKLINES  ═══════════ */
+  function drawSpark(key, color) {
+    const cv = $("spark-" + key);
+    const pts = S.hist[key];
+    const dpr = window.devicePixelRatio || 1;
+    const w = cv.clientWidth, h = cv.clientHeight;
+    if (!w || !h) return;
+    if (cv.width !== w * dpr || cv.height !== h * dpr) {
+      cv.width = w * dpr; cv.height = h * dpr;
+    }
+    const c = cv.getContext("2d");
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, w, h);
+    if (pts.length < 2) return;
+
+    const [lo, hi] = RANGE[key];
+    const n = pts.length;
+    const x = i => (i / (n - 1)) * w;
+    const y = v => h - 2 - ((v - lo) / (hi - lo)) * (h - 4);
+
+    // faint baseline grid
+    c.strokeStyle = getVar("--line-soft");
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(0, h - 1.5); c.lineTo(w, h - 1.5); c.stroke();
+
+    // area fill
+    c.beginPath();
+    c.moveTo(x(0), y(pts[0]));
+    for (let i = 1; i < n; i++) c.lineTo(x(i), y(pts[i]));
+    c.lineTo(w, h); c.lineTo(0, h); c.closePath();
+    const g = c.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, color + "44");
+    g.addColorStop(1, color + "00");
+    c.fillStyle = g; c.fill();
+
+    // line
+    c.beginPath();
+    c.moveTo(x(0), y(pts[0]));
+    for (let i = 1; i < n; i++) c.lineTo(x(i), y(pts[i]));
+    c.strokeStyle = color; c.lineWidth = 1.5;
+    c.lineJoin = "round"; c.stroke();
+
+    // emphasized endpoint
+    c.beginPath();
+    c.arc(x(n - 1), y(pts[n - 1]), 2.4, 0, Math.PI * 2);
+    c.fillStyle = color; c.fill();
+  }
+
+  const varCache = {};
+  function getVar(name) {
+    if (!varCache[name] || varCache.dirty) {
+      varCache[name] = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+    return varCache[name];
+  }
+  function flushVars() { for (const k in varCache) delete varCache[k]; }
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", flushVars);
+
+  /* ═══════════  RENDER: INSTRUMENTS  ═══════════ */
+  function sevOf(key) {
+    const v = S[key], th = S.th[key];
+    if (!S.armed) return "idle";
+    if (v >= th) return "crit";
+    if (v >= th * 0.85) return "warn";
+    return "safe";
+  }
+
+  const SEV_VAR = { safe: "--safe", warn: "--warn", crit: "--crit", idle: "--ink-faint" };
+
+  function renderInstrument(key, decimals, unitFmt) {
+    const v = S[key], th = S.th[key];
+    const [lo, hi] = RANGE[key];
+    const sev = sevOf(key);
+    const col = getVar(SEV_VAR[sev]);
+
+    $("inst-" + key).style.setProperty("--iv", `var(${SEV_VAR[sev]})`);
+    $("val-" + key).textContent = v.toFixed(decimals);
+    $("fill-" + key).style.width = Math.min(100, Math.max(0, ((v - lo) / (hi - lo)) * 100)) + "%";
+    $("tick-" + key).style.insetInlineStart = (((th - lo) / (hi - lo)) * 100) + "%";
+    $("lim-" + key).textContent = unitFmt(th);
+    drawSpark(key, col);
+  }
+
+  function renderAll() {
+    renderInstrument("temp", 1, n => t("limTemp")(n));
+    renderInstrument("hum", 0, n => t("limHum")(n));
+    renderInstrument("gas", 0, n => t("limGas")(n));
+    renderStripe();
+    renderLamps();
+  }
+
+  /* ═══════════  RENDER: STRIPE  ═══════════ */
+  function renderStripe() {
+    const st = $("stripe"), val = $("stateVal"), sub = $("stateSub");
+    const path = $("beaconPath");
+
+    if (!S.armed) {
+      st.dataset.state = "off";
+      val.textContent = t("stOff"); sub.textContent = t("stOffSub");
+      path.setAttribute("d", "M18.4 18.4A9 9 0 0 1 5.6 5.6m2.3-1.7a9 9 0 0 1 12.2 12.2M2 2l20 20");
+      return;
+    }
+    if (S.alarm) {
+      st.dataset.state = "crit";
+      val.textContent = S.muted ? t("stMuted") : t("stCrit");
+      sub.textContent = S.muted ? t("stMutedSub") : whyText();
+      path.setAttribute("d", "M12 3 1.5 21h21L12 3M12 10v4.5M12 18h.01");
+      return;
+    }
+    const worst = ["temp", "hum", "gas"].map(sevOf);
+    if (worst.includes("warn")) {
+      st.dataset.state = "warn";
+      val.textContent = t("stWarn");
+      sub.textContent = t("stNormalSub");
+      path.setAttribute("d", "M12 3 1.5 21h21L12 3M12 10v4.5M12 18h.01");
+      return;
+    }
+    st.dataset.state = "safe";
+    val.textContent = t("stNormal"); sub.textContent = t("stNormalSub");
+    path.setAttribute("d", "m5 13 4 4L19 7");
+  }
+
+  function whyText() {
+    if (S.mode === "gas") return t("whyGas");
+    if (S.mode === "fire") return t("whyFire");
+    if (S.hum >= S.th.hum) return t("whyHum");
+    return t("whyFire");
+  }
+
+  /* ═══════════  RENDER: LAMPS  ═══════════ */
+  function renderLamps() {
+    const siren = (S.alarm && !S.muted) || S.testing;
+    const red = S.alarm || S.testing;
+    set($("lamp-green"), S.armed && !S.alarm && !S.testing, false);
+    set($("lamp-red"), red, red);
+    set($("lamp-siren"), siren, siren);
+    set($("lamp-gsm"), true, false);
+    function set(el, on, blink) {
+      el.dataset.on = on ? "1" : "0";
+      el.dataset.blink = blink ? "1" : "0";
+    }
+  }
+
+  /* ═══════════  RENDER: LOG  ═══════════ */
+  const KIND_VAR = { crit: "--crit", warn: "--warn", ok: "--safe", info: "--ink-faint" };
+
+  function renderLog() {
+    const el = $("logList");
+    if (!S.log.length) {
+      el.innerHTML = `<div class="log-empty">${esc(t("logEmpty"))}</div>`;
+      return;
+    }
+    el.innerHTML = S.log.map(e => `
+      <div class="log-row" style="--lc:var(${KIND_VAR[e.kind] || "--ink-faint"})">
+        <div class="log-dot"></div>
+        <div class="log-body">
+          <div class="log-msg">${esc(e.msg)}</div>
+          <div class="log-time">${esc(e.time)}</div>
+        </div>
+      </div>`).join("");
+  }
+
+  function renderBadge() {
+    const b = $("logBadge");
+    b.hidden = S.unseen === 0;
+    b.textContent = S.unseen > 9 ? "9+" : String(S.unseen);
+  }
+
+  const esc = s => String(s).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  /* ═══════════  RENDER: PHONES  ═══════════ */
+  function renderPhones() {
+    $("phoneList").innerHTML = S.phones.map((p, i) => `
+      <div class="phone-row">
+        <span class="p">${esc(p)}</span>
+        <span class="tag">${esc(i === 0 ? t("tagMain") : t("tagBackup"))}</span>
+        <button class="x-btn" type="button" data-del="${i}" aria-label="حذف ${esc(p)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>`).join("");
+    $("phoneList").querySelectorAll("[data-del]").forEach(b => {
+      b.addEventListener("click", () => {
+        if (S.phones.length <= 1) return;
+        const [gone] = S.phones.splice(+b.dataset.del, 1);
+        addLog(t("logPhoneDel")(gone), "info");
+        renderPhones();
+      });
+    });
+  }
+
+  /* ═══════════  EMERGENCY SEQUENCE  ═══════════ */
+  let seqTimers = [];
+  function clearSeq() { seqTimers.forEach(clearTimeout); seqTimers = []; }
+  const later = (ms, fn) => seqTimers.push(setTimeout(fn, ms));
+
+  function trigger(mode) {
+    if (S.alarm) return;
+    S.mode = mode;
+    S.alarm = true;
+    S.muted = false;
+
+    addLog(mode === "gas" ? t("logCritGas") : mode === "hum" ? t("logCritHum") : t("logCritFire"), "crit");
+
+    const a = $("alarm");
+    a.classList.add("on");
+    $("alarmWhy").textContent = whyText();
+    $("alarmWhen").textContent = clock();
+    $("btnSilence").disabled = false;
+    ["st-1", "st-2", "st-3"].forEach(id => $(id).className = "step");
+    $("smsCard").hidden = true;
+
+    clearSeq();
+    later(250, () => $("st-1").classList.add("done"));
+    later(900, () => {
+      $("st-2").classList.add("live");
+      $("stp2b").textContent = t("calling");
+      $("stp2s").textContent = S.phones[0];
+    });
+    later(3200, () => {
+      $("st-2").classList.remove("live");
+      $("st-2").classList.add("done");
+      $("stp2b").textContent = t("called");
+      addLog(t("logCall")(S.phones[0]), "warn");
+    });
+    later(3700, () => {
+      $("st-3").classList.add("live");
+    });
+    later(4600, () => {
+      $("st-3").classList.remove("live");
+      $("st-3").classList.add("done");
+      const smsFn = mode === "gas" ? t("smsGas") : mode === "hum" ? t("smsHum") : t("smsFire");
+      $("smsBody").textContent = smsFn(S.temp.toFixed(1), S.gas.toFixed(0));
+      $("smsCard").hidden = false;
+      S.phones.forEach(p => addLog(t("logSms")(p), "warn"));
+    });
+
+    renderAll();
+  }
+
+  function silence(fromOverlay) {
+    if (!S.alarm) return;
+    S.muted = true;
+    addLog(fromOverlay ? t("logAck") : t("logSilence"), "ok");
+    $("btnSilence").disabled = true;
+    renderAll();
+  }
+
+  function toNormal() {
+    clearSeq();
+    const was = S.alarm;
+    S.mode = "normal"; S.alarm = false; S.muted = false;
+    $("alarm").classList.remove("on");
+    $("btnSilence").disabled = true;
+    if (was) addLog(t("logNormal"), "ok");
+    renderAll();
+  }
+
+  /* ═══════════  SIMULATION LOOP  ═══════════ */
+  const TARGET = {
+    normal: { temp: 29, hum: 46, gas: 130 },
+    fire:   { temp: 72, hum: 24, gas: 520 },
+    gas:    { temp: 33, hum: 51, gas: 830 }
+  };
+
+  function tick() {
+    const tgt = TARGET[S.mode] || TARGET.normal;
+    const k = S.mode === "normal" ? 0.06 : 0.16;
+    const jitter = S.mode === "normal" ? 1 : 0.4;
+
+    S.temp = lerp(S.temp, tgt.temp + (Math.random() - 0.5) * 1.2 * jitter, k);
+    S.hum  = lerp(S.hum,  tgt.hum  + (Math.random() - 0.5) * 3   * jitter, k);
+    S.gas  = lerp(S.gas,  tgt.gas  + (Math.random() - 0.5) * 26  * jitter, k);
+
+    S.temp = Math.max(0, S.temp); S.hum = Math.min(100, Math.max(0, S.hum)); S.gas = Math.max(0, S.gas);
+
+    for (const key of ["temp", "hum", "gas"]) {
+      const h = S.hist[key];
+      h.push(S[key]);
+      if (h.length > 48) h.shift();
+    }
+
+    // threshold crossing raises the alarm on its own — same logic as the device
+    if (S.armed && !S.alarm) {
+      if (S.temp >= S.th.temp) trigger("fire");
+      else if (S.gas >= S.th.gas) trigger("gas");
+      else if (S.hum >= S.th.hum) trigger("hum");
+    }
+    // condition cleared by itself
+    if (S.alarm && S.mode === "normal" &&
+        S.temp < S.th.temp * 0.9 && S.gas < S.th.gas * 0.9 && S.hum < S.th.hum * 0.9) {
+      toNormal();
+    }
+
+    renderAll();
+  }
+
+  /* ═══════════  UPTIME  ═══════════ */
+  function uptime() {
+    const s = Math.floor((Date.now() - S.started) / 1000);
+    const p = n => String(n).padStart(2, "0");
+    $("m-up").textContent = `${p(Math.floor(s / 3600))}:${p(Math.floor(s / 60) % 60)}:${p(s % 60)}`;
+  }
+
+  /* ═══════════  NAV  ═══════════ */
+  let currentView = "monitor";
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      currentView = tab.dataset.view;
+      document.querySelectorAll(".tab").forEach(x =>
+        x.setAttribute("aria-selected", String(x === tab)));
+      document.querySelectorAll(".view").forEach(v =>
+        v.classList.toggle("on", v.id === "v-" + currentView));
+      if (currentView === "log") { S.unseen = 0; renderBadge(); }
+      if (currentView === "monitor") requestAnimationFrame(renderAll);
+    });
+  });
+
+  /* ═══════════  CONTROLS  ═══════════ */
+  $("armSw").addEventListener("click", () => {
+    S.armed = !S.armed;
+    $("armSw").setAttribute("aria-checked", String(S.armed));
+    if (!S.armed) { toNormal(); S.testing = false; }
+    applyLang(); // arm title/desc text depends on state
+    addLog(S.armed ? t("logArm") : t("logDisarm"), S.armed ? "ok" : "info");
+    renderAll();
+  });
+
+  $("btnSilence").addEventListener("click", () => silence(false));
+  $("btnAck").addEventListener("click", () => { silence(true); $("alarm").classList.remove("on"); });
+  $("btnDismiss").addEventListener("click", () => { $("alarm").classList.remove("on"); });
+
+  let testTimer = null;
+  $("btnTest").addEventListener("click", () => {
+    if (S.testing) return;
+    S.testing = true;
+    addLog(t("logTest"), "warn");
+    renderLamps();
+    clearTimeout(testTimer);
+    testTimer = setTimeout(() => {
+      S.testing = false;
+      addLog(t("logTestEnd"), "ok");
+      renderLamps();
+    }, 4000);
+  });
+
+  $("simFire").addEventListener("click", () => { S.mode = "fire"; });
+  $("simGas").addEventListener("click", () => { S.mode = "gas"; });
+  $("simReset").addEventListener("click", toNormal);
+  $("btnClearLog").addEventListener("click", () => { S.log = []; S.unseen = 0; renderLog(); renderBadge(); });
+
+  /* ═══════════  THRESHOLD SLIDERS  ═══════════ */
+  const TH_UNITS = { temp: " °C", hum: " %", gas: " PPM" };
+  ["temp", "hum", "gas"].forEach(key => {
+    const el = $("th-" + key);
+    el.addEventListener("input", () => {
+      S.th[key] = +el.value;
+      $(`th-${key}-v`).textContent = el.value + TH_UNITS[key];
+      renderAll();
+    });
+    el.addEventListener("change", () => {
+      const label = t(key === "temp" ? "thTemp" : key === "hum" ? "thHum" : "thGas");
+      addLog(t("logThresh")(label, el.value + TH_UNITS[key]), "info");
+    });
+  });
+
+  $("btnAddPhone").addEventListener("click", () => {
+    const v = prompt(t("promptPhone"), "+968 ");
+    if (!v) return;
+    const n = v.trim();
+    if (!n || S.phones.includes(n)) return;
+    S.phones.push(n);
+    addLog(t("logPhoneAdd")(n), "info");
+    renderPhones();
+  });
+
+  /* ═══════════  LANGUAGE  ═══════════ */
+  function applyLang() {
+    const app = $("app");
+    app.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    app.setAttribute("lang", lang);
+    $("langBtn").textContent = lang === "ar" ? "EN" : "ع";
+    $("langBtn").title = lang === "ar" ? "English" : "العربية";
+
+    document.querySelectorAll("[data-t]").forEach(el => {
+      const v = T[lang][el.dataset.t];
+      if (typeof v === "string") el.textContent = v;
+    });
+
+    // state-dependent copy the loop above can't know about
+    $("armDesc").textContent = S.armed ? t("armOnDesc") : t("armOffDesc");
+    document.querySelectorAll('[data-t="armTitle"]').forEach(el => {
+      el.textContent = S.armed ? t("armTitle") : t("armTitleOff");
+    });
+    ["temp", "hum", "gas"].forEach(k => {
+      $(`th-${k}-v`).textContent = S.th[k] + TH_UNITS[k];
+    });
+    $("alarmWhy").textContent = whyText();
+    renderPhones();
+    renderLog();
+    renderAll();
+  }
+
+  $("langBtn").addEventListener("click", () => {
+    lang = lang === "ar" ? "en" : "ar";
+    applyLang();
+  });
+
+  /* ═══════════  BOOT  ═══════════ */
+  for (const key of ["temp", "hum", "gas"]) {
+    for (let i = 0; i < 40; i++) {
+      const base = TARGET.normal[key];
+      S.hist[key].push(base + (Math.random() - 0.5) * (key === "gas" ? 30 : key === "hum" ? 5 : 1.6));
+    }
+  }
+  renderPhones();
+  renderLog();
+  renderBadge();
+  applyLang();
+  addLog(t("logArm"), "ok");
+  S.unseen = 0; renderBadge();
+
+  setInterval(tick, 1200);
+  setInterval(uptime, 1000);
+  uptime();
+  window.addEventListener("resize", () => requestAnimationFrame(renderAll));
+})();
+</script>
